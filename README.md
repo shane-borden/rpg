@@ -73,7 +73,7 @@ Anything that works in psql works here unchanged. Everything rpg adds uses `/`. 
 
 ## AI assistant
 
-Integrates with OpenAI, Anthropic, and Ollama:
+Integrates with OpenAI, Anthropic, Gemini, and Ollama:
 
 ```sql
 -- Ask questions about your database

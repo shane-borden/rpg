@@ -296,7 +296,7 @@ Anyone fluent in psql — human or AI agent — should be immediately productive
 - Schema context: table definitions, indexes, constraints, statistics fed to LLM
 - Session context: recent queries and results as conversation history
 - pg_ash context: wait event data when available
-- Pluggable backends: OpenAI API, Anthropic API, Ollama (local), custom endpoint
+- Pluggable backends: OpenAI API, Anthropic API, Gemini API, Ollama (local), custom endpoint
 - Streaming responses displayed in terminal
 - Token usage tracking and budget limits
 - `\set AI_PROVIDER`, `\set AI_MODEL`, `\set AI_API_KEY`
@@ -1083,7 +1083,7 @@ border_style = "unicode"    # ascii | unicode | none
 expanded = "auto"           # on | off | auto
 
 [ai]
-provider = "anthropic"      # openai | anthropic | ollama | custom
+provider = "anthropic"      # openai | anthropic | gemini | ollama | custom
 model = "claude-sonnet-4-20250514"
 api_key_env = "ANTHROPIC_API_KEY"
 auto_explain_errors = true

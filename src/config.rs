@@ -199,7 +199,7 @@ impl Default for SafetyConfig {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
 pub struct AiConfig {
-    /// Provider name: `"anthropic"`, `"openai"`, or `"ollama"`.
+    /// Provider name: `"anthropic"`, `"openai"`, `"gemini"`, or `"ollama"`.
     pub provider: Option<String>,
     /// Model identifier override (uses provider default when absent).
     pub model: Option<String>,
@@ -311,6 +311,7 @@ impl AiConfig {
     ///
     /// - `OPENAI`    → `"openai"`
     /// - `ANTHROPIC` → `"anthropic"`
+    /// - `GEMINI`    → `"gemini"`
     /// - `OLLAMA`    → `"ollama"`
     ///
     /// Called as a post-load fixup so that a minimal config like
@@ -328,6 +329,8 @@ impl AiConfig {
             Some("openai".to_owned())
         } else if key_env.contains("ANTHROPIC") {
             Some("anthropic".to_owned())
+        } else if key_env.contains("GEMINI") {
+            Some("gemini".to_owned())
         } else if key_env.contains("OLLAMA") {
             Some("ollama".to_owned())
         } else {
@@ -342,7 +345,8 @@ impl AiConfig {
     ///
     /// 1. `ANTHROPIC_API_KEY` → provider `"anthropic"`
     /// 2. `OPENAI_API_KEY`    → provider `"openai"`
-    /// 3. `OLLAMA_API_KEY`    → provider `"ollama"`
+    /// 3. `GEMINI_API_KEY`    → provider `"gemini"`
+    /// 4. `OLLAMA_API_KEY`    → provider `"ollama"`
     ///
     /// Stops at the first non-empty variable found.  Called after
     /// [`infer_provider`] so that an explicit `api_key_env` config value
@@ -351,6 +355,7 @@ impl AiConfig {
         const CANDIDATES: &[(&str, &str)] = &[
             ("ANTHROPIC_API_KEY", "anthropic"),
             ("OPENAI_API_KEY", "openai"),
+            ("GEMINI_API_KEY", "gemini"),
             ("OLLAMA_API_KEY", "ollama"),
         ];
         // Only probe when the config carries no explicit settings.
@@ -1617,6 +1622,16 @@ provider = "ollama"
     }
 
     #[test]
+    fn infer_provider_gemini() {
+        let mut ai = AiConfig {
+            api_key_env: Some("GEMINI_API_KEY".to_owned()),
+            ..AiConfig::default()
+        };
+        ai.infer_provider();
+        assert_eq!(ai.provider.as_deref(), Some("gemini"));
+    }
+
+    #[test]
     fn infer_provider_ollama() {
         let mut ai = AiConfig {
             api_key_env: Some("OLLAMA_API_KEY".to_owned()),
@@ -1660,8 +1675,9 @@ provider = "ollama"
     #[test]
     fn auto_detect_finds_anthropic_key() {
         let _lock = ENV_LOCK.lock().unwrap();
-        // Ensure OPENAI and OLLAMA are absent so only ANTHROPIC is visible.
+        // Ensure OPENAI, GEMINI and OLLAMA are absent so only ANTHROPIC is visible.
         std::env::remove_var("OPENAI_API_KEY");
+        std::env::remove_var("GEMINI_API_KEY");
         std::env::remove_var("OLLAMA_API_KEY");
         std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test");
         let mut ai = AiConfig::default();
@@ -1669,6 +1685,34 @@ provider = "ollama"
         std::env::remove_var("ANTHROPIC_API_KEY");
         assert_eq!(ai.provider.as_deref(), Some("anthropic"));
         assert_eq!(ai.api_key_env.as_deref(), Some("ANTHROPIC_API_KEY"));
+    }
+
+    #[test]
+    fn auto_detect_finds_openai_key() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("ANTHROPIC_API_KEY");
+        std::env::remove_var("GEMINI_API_KEY");
+        std::env::remove_var("OLLAMA_API_KEY");
+        std::env::set_var("OPENAI_API_KEY", "sk-openai-test");
+        let mut ai = AiConfig::default();
+        ai.auto_detect_provider();
+        std::env::remove_var("OPENAI_API_KEY");
+        assert_eq!(ai.provider.as_deref(), Some("openai"));
+        assert_eq!(ai.api_key_env.as_deref(), Some("OPENAI_API_KEY"));
+    }
+
+    #[test]
+    fn auto_detect_finds_gemini_key() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("ANTHROPIC_API_KEY");
+        std::env::remove_var("OPENAI_API_KEY");
+        std::env::remove_var("OLLAMA_API_KEY");
+        std::env::set_var("GEMINI_API_KEY", "AIza-test");
+        let mut ai = AiConfig::default();
+        ai.auto_detect_provider();
+        std::env::remove_var("GEMINI_API_KEY");
+        assert_eq!(ai.provider.as_deref(), Some("gemini"));
+        assert_eq!(ai.api_key_env.as_deref(), Some("GEMINI_API_KEY"));
     }
 
     #[test]

@@ -120,7 +120,7 @@ rpg=> /explain SELECT * FROM orders JOIN customers ON ...
 ```
 
 ### LLM Backend
-- Pluggable: OpenAI, Anthropic, local models (ollama)
+- Pluggable: OpenAI, Anthropic, Gemini, local models (ollama)
 - Context window management — schema + recent queries as context
 - Streaming responses in terminal
 

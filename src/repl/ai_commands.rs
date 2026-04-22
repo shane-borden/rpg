@@ -27,6 +27,7 @@ pub(super) fn resolve_api_key(api_key_env: Option<&str>) -> Option<String> {
     // Detect raw keys accidentally placed in api_key_env.
     let looks_like_raw_key = env_or_key.starts_with("sk-")
         || env_or_key.starts_with("gsk_")
+        || env_or_key.starts_with("AIza")
         || (env_or_key.len() > 40
             && !env_or_key
                 .chars()
@@ -1039,7 +1040,7 @@ pub(super) async fn handle_ai_ask(
             "AI not configured. Add an [ai] section to {}",
             crate::config::user_config_path_display()
         );
-        rpg_eprintln!("Supported providers: anthropic, openai, ollama");
+        rpg_eprintln!("Supported providers: anthropic, openai, gemini, ollama");
         rpg_eprintln!("Example:");
         rpg_eprintln!("  [ai]");
         rpg_eprintln!("  provider = \"anthropic\"");
@@ -1647,7 +1648,7 @@ pub(super) async fn handle_ai_fix(
             "AI not configured. Add an [ai] section to {}",
             crate::config::user_config_path_display()
         );
-        rpg_eprintln!("Supported providers: anthropic, openai, ollama");
+        rpg_eprintln!("Supported providers: anthropic, openai, gemini, ollama");
         rpg_eprintln!("Example:");
         rpg_eprintln!("  [ai]");
         rpg_eprintln!("  provider = \"anthropic\"");
