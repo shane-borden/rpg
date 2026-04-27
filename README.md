@@ -73,7 +73,44 @@ Anything that works in psql works here unchanged. Everything rpg adds uses `/`. 
 
 ## AI assistant
 
-Integrates with OpenAI, Anthropic, Gemini, and Ollama:
+Integrates with OpenAI, Anthropic, Gemini, and Ollama.
+
+### AI Configuration
+
+The AI assistant can be configured globally in `~/.config/rpg/config.toml` or per-project in `.rpg.toml`.
+
+| Property | Default | Description |
+| :--- | :--- | :--- |
+| `provider` | `""` | The AI provider to use (`anthropic`, `openai`, `gemini`, `ollama`). |
+| `model` | Provider default | The specific model to query (e.g., `gpt-4o`, `claude-sonnet-4-6`). |
+| `api_key_env` | Varies | Environment variable holding your API key (e.g., `OPENAI_API_KEY`). |
+| `base_url` | Varies | Custom API endpoint (useful for Ollama or enterprise proxies). |
+| `timeout` | `30` | Maximum time in seconds to wait for the AI to respond. |
+| `max_tokens` | `4096` | Maximum number of output tokens the AI can generate. |
+| `token_budget` | `0` | Session token limit (input + output). `0` means unlimited. |
+| `context_window` | `16000` | Token threshold for auto-compacting the conversation history. |
+| `show_sql` | `false` | If `true`, the AI's generated SQL is displayed before execution. |
+| `auto_explain_errors` | `true` | If `true`, SQL errors automatically trigger a brief inline fix hint. |
+| `project_context_files` | `[]` | Array of file paths to inject into the system prompt for project context. |
+| `system_prompt` | `""` | Custom instructions or conventions appended to the AI system prompt. |
+
+### Example Configuration
+
+```toml
+[ai]
+provider = "anthropic"
+model = "claude-sonnet-4-6"
+api_key_env = "ANTHROPIC_API_KEY" 
+timeout = 60
+show_sql = true
+auto_explain_errors = true
+token_budget = 50000
+context_window = 16000
+project_context_files = ["docs/schema.md", "POSTGRES.md"]
+system_prompt = "This is a Rails app. The schema uses UUID primary keys."
+```
+
+### Use AI Assistant
 
 ```sql
 -- Ask questions about your database

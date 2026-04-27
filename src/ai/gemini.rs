@@ -358,6 +358,16 @@ mod tests {
     }
 
     #[test]
+    fn custom_base_url() {
+        let p = GeminiProvider::new(
+            "key".to_owned(),
+            Some("https://gemini.proxy.example.com".to_owned()),
+            30,
+        );
+        assert_eq!(p.base_url, "https://gemini.proxy.example.com");
+    }
+
+    #[test]
     fn timeout_stored() {
         let p = GeminiProvider::new("key".to_owned(), None, 45);
         assert_eq!(p.timeout_secs, 45);

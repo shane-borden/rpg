@@ -73,6 +73,7 @@ impl AnthropicProvider {
         let mut body = serde_json::json!({
             "model": model,
             "max_tokens": options.max_tokens,
+            "temperature": options.temperature,
             "messages": conv_messages,
         });
 
@@ -156,6 +157,7 @@ impl AnthropicProvider {
         let mut body = serde_json::json!({
             "model": model,
             "max_tokens": options.max_tokens,
+            "temperature": options.temperature,
             "messages": conv_messages,
             "stream": true,
         });

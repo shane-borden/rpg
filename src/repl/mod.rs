@@ -3629,7 +3629,11 @@ pub(crate) fn maybe_page(settings: &mut ReplSettings, text: &str) {
         if let Some(ref sl_arc) = settings.statusline {
             let sl = sl_arc.lock().unwrap();
             sl.clear();
+            rpg_print!("\x1b7");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
             sl.teardown_scroll_region();
+            rpg_print!("\x1b8");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
         }
         if let Some(ref cmd) = settings.pager_command {
             if let Err(e) = crate::pager::run_pager_external(cmd, text) {
@@ -3653,7 +3657,7 @@ pub(crate) fn maybe_page(settings: &mut ReplSettings, text: &str) {
         }
         if let Some(ref sl_arc) = settings.statusline {
             let sl = sl_arc.lock().unwrap();
-            sl.setup_scroll_region();
+            sl.setup_scroll_region_and_restore_cursor();
             sl.render();
         }
     } else {
@@ -3825,6 +3829,21 @@ fn apply_set(settings: &mut ReplSettings, name: &str, value: &str) {
         settings.config.ai.model = Some(value.to_owned());
         rpg_println!("AI model set to: {value}");
     }
+    // Mirror AI_TIMEOUT into config.ai.timeout.
+    if name == "AI_TIMEOUT" {
+        match value.parse::<u64>() {
+            Ok(n) => {
+                settings.config.ai.timeout = n;
+                rpg_println!("AI timeout set to: {n} seconds");
+            }
+            Err(_) => {
+                rpg_eprintln!(
+                    "\\set AI_TIMEOUT: invalid value \"{value}\"\n\
+                     Expected a non-negative integer."
+                );
+            }
+        }
+    }
     // Mirror TOKEN_BUDGET into config.ai.token_budget.
     //
     // Accepts a non-negative integer; 0 means unlimited.
@@ -3880,9 +3899,14 @@ fn apply_set(settings: &mut ReplSettings, name: &str, value: &str) {
             sl.enabled = on;
             if on {
                 sl.setup_scroll_region();
+                        sl.setup_scroll_region_and_restore_cursor();
                 sl.render();
             } else {
+                rpg_print!("\x1b7");
+                let _ = std::io::Write::flush(&mut std::io::stdout());
                 sl.teardown_scroll_region();
+                rpg_print!("\x1b8");
+                let _ = std::io::Write::flush(&mut std::io::stdout());
             }
         }
         if on {
@@ -6486,6 +6510,8 @@ pub async fn run_repl(
     // Tear down the status bar on exit.
     if let Some(ref sl_arc) = settings.statusline {
         sl_arc.lock().unwrap().teardown_scroll_region();
+        rpg_print!("\x1b[999H\x1b[K");
+        let _ = std::io::Write::flush(&mut std::io::stdout());
     }
 
     exit_code
@@ -6566,6 +6592,7 @@ async fn run_readline_loop(
         // candidates.  The DropdownEventHandler handles Up/Down/Esc navigation.
         .completion_type(rustyline::CompletionType::List)
         .edit_mode(edit_mode)
+        .bracketed_paste(true)
         .build();
 
     // Build schema cache (best-effort — completion degrades gracefully on
