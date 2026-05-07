@@ -2,6 +2,7 @@
 
 pub mod anthropic;
 pub mod context;
+pub mod gemini;
 pub mod ollama;
 pub mod openai;
 
@@ -208,6 +209,14 @@ pub fn create_provider(
                 timeout_secs,
             )))
         }
+        "gemini" => {
+            let key = api_key.ok_or("GEMINI_API_KEY not set")?;
+            Ok(Box::new(gemini::GeminiProvider::new(
+                key.to_owned(),
+                base_url.map(str::to_owned),
+                timeout_secs,
+            )))
+        }
         "ollama" => {
             let url = base_url.unwrap_or("http://localhost:11434");
             Ok(Box::new(ollama::OllamaProvider::new(
@@ -292,6 +301,13 @@ mod tests {
         let p =
             create_provider("openai", Some("sk-test"), None, 30).expect("should succeed with key");
         assert_eq!(p.name(), "openai");
+    }
+
+    #[test]
+    fn create_provider_gemini_with_key() {
+        let p =
+            create_provider("gemini", Some("AIza-test"), None, 30).expect("should succeed with key");
+        assert_eq!(p.name(), "gemini");
     }
 
     #[test]

@@ -1776,7 +1776,11 @@ pub(super) async fn execute_query_interactive(
         if let Some(ref sl_arc) = settings.statusline {
             let sl = sl_arc.lock().unwrap();
             sl.clear();
+            rpg_print!("\x1b7");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
             sl.teardown_scroll_region();
+            rpg_print!("\x1b8");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
         }
         run_pager_for_text(settings, text, display_bytes);
         // Re-establish scroll region, reposition cursor to bottom of scroll
@@ -1897,7 +1901,11 @@ pub(super) async fn execute_query_extended_interactive(
         if let Some(ref sl_arc) = settings.statusline {
             let sl = sl_arc.lock().unwrap();
             sl.clear();
+            rpg_print!("\x1b7");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
             sl.teardown_scroll_region();
+            rpg_print!("\x1b8");
+            let _ = std::io::Write::flush(&mut std::io::stdout());
         }
         run_pager_for_text(settings, &text, &captured);
         // Re-establish scroll region, reposition cursor to bottom of scroll

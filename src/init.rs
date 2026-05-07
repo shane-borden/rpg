@@ -44,6 +44,7 @@ pub fn generate_rpg_toml(config: &Config, params: &ConnParams) -> String {
 [ai]
 # provider = "{provider}"
 # model = "{model}"
+# api_key_env = "OPENAI_API_KEY" # e.g. ANTHROPIC_API_KEY, GEMINI_API_KEY, OLLAMA_API_KEY
 
 [display]
 # border = {border}

@@ -137,17 +137,13 @@ impl Drop for TerminalGuard {
         let _ = terminal::disable_raw_mode();
         let _ = execute!(io::stdout(), LeaveAlternateScreen);
 
-        // After returning to the main screen buffer, ghost characters from
-        // prior pager content can bleed into the visible area if the main
-        // buffer still holds old output at those positions.  Move the cursor
-        // to the top-left corner and erase the entire screen so the REPL
-        // always starts from a clean slate.
+        // After returning to the main screen buffer, place the cursor at the
+        // bottom of the UI so the next prompt is drawn below any existing
+        // content, preserving the user's scrollback history.
         //
-        // \x1b[H  — cursor to home (row 1, col 1)
-        // \x1b[2J — erase entire display
-        // \x1b[H  — cursor back to home so callers position correctly
+        // \x1b[999H — moves the cursor to the bottom of the screen
         let mut stdout = io::stdout();
-        let _ = stdout.write_all(b"\x1b[H\x1b[2J\x1b[H");
+        let _ = stdout.write_all(b"\x1b[999H\x1b[K");
         let _ = stdout.flush();
 
         // Reset the scroll region on the main screen buffer so the REPL can
